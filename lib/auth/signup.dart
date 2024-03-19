@@ -1,4 +1,5 @@
 import 'package:animated_snack_bar/animated_snack_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_todo/auth/login.dart';
 import 'package:firebase_todo/models/user.dart';
@@ -149,7 +150,15 @@ class _SignupScreenState extends State<SignupScreen> {
       } else {
         UserCredential data = await auth.createUserWithEmailAndPassword(
             email: user!.email, password: user!.password);
-        print(data.user!.uid);
+
+        //create the profile for the person
+        FirebaseFirestore db = FirebaseFirestore.instance;
+        await db.collection('profile').doc(data.user!.uid).set({
+          'name': '',
+          'phone': '',
+          'email': user!.email,
+        });
+
         setState(() {
           passwordMismatch = false;
         });
