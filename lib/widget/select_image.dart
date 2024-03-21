@@ -1,7 +1,13 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_todo/provider/task_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 
 class SelectImage extends StatefulWidget {
   const SelectImage({super.key});
@@ -11,50 +17,53 @@ class SelectImage extends StatefulWidget {
 
 class _SelectImageState extends State<SelectImage> {
   String imagePath = '';
+  bool isWorking = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(children: [
-        const SizedBox(
-          height: 20,
-        ),
-        const Text(
-          'Upload Profile Picture',
-          style: TextStyle(fontSize: 20),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        imagePath != ''
-            ? SizedBox(
-                height: 40,
-                child: Image.network(imagePath),
+      body: isWorking
+          ? const Center(child: CircularProgressIndicator())
+          : Column(children: [
+              const SizedBox(
+                height: 20,
+              ),
+              const Text(
+                'Upload Profile Picture',
+                style: TextStyle(fontSize: 20),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              imagePath != ''
+                  ? SizedBox(
+                      height: 40,
+                      child: Image.network(imagePath),
+                    )
+                  : const SizedBox(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      takePhoto(ImageSource.camera);
+                    },
+                    child: const Row(children: [
+                      Icon(Icons.camera_alt),
+                      Text("Take Photo"),
+                    ]),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      takePhoto(ImageSource.gallery);
+                    },
+                    child: const Row(children: [
+                      Icon(Icons.image),
+                      Text("Select Image"),
+                    ]),
+                  ),
+                ],
               )
-            : const SizedBox(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                takePhoto(ImageSource.camera);
-              },
-              child: const Row(children: [
-                Icon(Icons.camera_alt),
-                Text("Take Photo"),
-              ]),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                takePhoto(ImageSource.gallery);
-              },
-              child: const Row(children: [
-                Icon(Icons.image),
-                Text("Select Image"),
-              ]),
-            ),
-          ],
-        )
-      ]),
+            ]),
     );
   }
 
@@ -67,11 +76,47 @@ class _SelectImageState extends State<SelectImage> {
         return;
       }
       File? img = File(photo.path);
-
+      if (img == null) {
+        return;
+      }
       img = await CropImage(img);
-    } catch (e) {
-      print(e);
+
+      setState(() {
+        isWorking = true;
+      });
+      //get the path
+      final String fileName = path.basename(img!.path);
+      //store in firebase storage
+      FirebaseStorage storage = FirebaseStorage.instance;
+
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {'picked-file-path': img.path},
+      );
+
+      var upload = await storage
+          .ref()
+          .child('profile')
+          .child(fileName)
+          .putFile(img, metadata);
+      imagePath = await upload.ref.getDownloadURL();
+
+      //update the profile image
+      FirebaseAuth auth = FirebaseAuth.instance;
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      firestore.collection('profile').doc(auth.currentUser!.uid).update({
+        'image': imagePath,
+      });
+      //update in the provider
+      Provider.of<TaskProvider>(context, listen: false)
+          .updateProfileData(imagePath);
       Navigator.pop(context);
+    } catch (e) {
+      print('gordon $e');
+    } finally {
+      setState(() {
+        isWorking = false;
+      });
     }
   }
 

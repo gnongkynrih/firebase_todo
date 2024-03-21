@@ -62,10 +62,41 @@ class _TodoListScreenState extends State<TodoListScreen> {
             Provider.of<TaskProvider>(context, listen: true).todoList.length,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
-            title: Text(Provider.of<TaskProvider>(context, listen: true)
-                .todoList[index]
-                .task),
-          );
+              title: Text(Provider.of<TaskProvider>(context, listen: true)
+                  .todoList[index]
+                  .task),
+              trailing: IconButton(
+                icon: Icon(Provider.of<TaskProvider>(context, listen: true)
+                        .todoList[index]
+                        .isCompleted
+                    ? Icons.check_box
+                    : Icons.check_box_outline_blank),
+                onPressed: () async {
+                  FirebaseFirestore firestore = FirebaseFirestore.instance;
+                  final data = await firestore
+                      .collection('todo')
+                      .where('uid',
+                          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                      .where('task',
+                          isEqualTo:
+                              Provider.of<TaskProvider>(context, listen: false)
+                                  .todoList[index]
+                                  .task)
+                      .get();
+
+                  for (var element in data.docs) {
+                    bool complete =
+                        Provider.of<TaskProvider>(context, listen: false)
+                            .todoList[index]
+                            .isCompleted;
+                    Provider.of<TaskProvider>(context, listen: false)
+                        .updateTodoStatus(index, !complete);
+                    await firestore.collection('todo').doc(element.id).update({
+                      'isCompleted': !complete,
+                    });
+                  }
+                },
+              ));
         },
       )),
       floatingActionButton: IconButton(

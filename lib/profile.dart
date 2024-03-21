@@ -20,11 +20,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore db = FirebaseFirestore.instance;
   bool isSaving = false;
   bool isLoading = true;
+
   getData() async {
     final DocumentSnapshot snapshot =
         await db.collection('profile').doc(auth.currentUser!.uid).get();
     if (snapshot.exists) {
       var data = snapshot.data() as Map<String, dynamic>;
+      Provider.of<TaskProvider>(context, listen: false)
+          .updateProfileData(data['image']);
+
       setState(() {
         profile!.name = data['name'];
         profile!.phone = data['phone'];
@@ -69,10 +73,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     Stack(
                       children: [
-                        profile!.image != null
+                        Provider.of<TaskProvider>(context, listen: true)
+                                .profilePicture
+                                .isNotEmpty
                             ? CircleAvatar(
                                 radius: 50,
-                                backgroundImage: NetworkImage(profile!.image!),
+                                backgroundImage: NetworkImage(
+                                    Provider.of<TaskProvider>(context,
+                                            listen: true)
+                                        .profilePicture),
                               )
                             : const CircleAvatar(
                                 radius: 50,
