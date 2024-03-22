@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_todo/provider/task_provider.dart';
+import 'package:firebase_todo/service/navigator_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -108,9 +109,10 @@ class _SelectImageState extends State<SelectImage> {
         'image': imagePath,
       });
       //update in the provider
-      Provider.of<TaskProvider>(context, listen: false)
+      Provider.of<TaskProvider>(NavigatorService.navKey.currentContext!,
+              listen: false)
           .updateProfileData(imagePath);
-      Navigator.pop(context);
+      Navigator.pop(NavigatorService.navKey.currentContext!);
     } catch (e) {
       print('gordon $e');
     } finally {

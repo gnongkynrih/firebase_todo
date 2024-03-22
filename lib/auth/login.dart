@@ -1,8 +1,7 @@
-import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_todo/auth/signup.dart';
 import 'package:firebase_todo/models/user.dart';
-import 'package:firebase_todo/todo_list.dart';
+import 'package:firebase_todo/screen/todo_list.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   var formKey = GlobalKey<FormState>();
 
-  UserModel? user = UserModel.defaultValue();
+  UserSchema? user = UserSchema.defaultValue();
   FirebaseAuth auth = FirebaseAuth.instance;
   bool invalidCredentials = false;
   bool isLogin = false;
@@ -136,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
       try {
-        UserCredential data = await auth.signInWithEmailAndPassword(
+        await auth.signInWithEmailAndPassword(
             email: user!.email, password: user!.password);
         setState(() {
           isLogin = false;

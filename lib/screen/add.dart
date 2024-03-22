@@ -82,7 +82,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
       await firebase.collection('todo').add(data);
 
       //update the provider task list
-      Provider.of<TaskProvider>(context, listen: false).setTodoList(todo);
+      Provider.of<TaskProvider>(context, listen: false).addTodoList(todo);
       Navigator.pop(context, todo);
     }
   }

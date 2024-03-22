@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_todo/models/profile.dart';
 import 'package:firebase_todo/provider/task_provider.dart';
+import 'package:firebase_todo/service/navigator_service.dart';
 import 'package:firebase_todo/widget/select_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await db.collection('profile').doc(auth.currentUser!.uid).get();
     if (snapshot.exists) {
       var data = snapshot.data() as Map<String, dynamic>;
-      Provider.of<TaskProvider>(context, listen: false)
+      Provider.of<TaskProvider>(NavigatorService.navKey.currentContext!,
+              listen: false)
           .updateProfileData(data['image']);
 
       setState(() {

@@ -15,7 +15,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   var formKey = GlobalKey<FormState>();
 
-  UserModel? user = UserModel.defaultValue();
+  UserSchema? user = UserSchema.defaultValue();
   FirebaseAuth auth = FirebaseAuth.instance;
   bool passwordMismatch = false;
 

@@ -48,6 +48,8 @@ dependencies:
   firebase_storage: ^11.6.0
   firebase_app_check: ^0.2.1+8
   path: ^1.8.3
+  connectivity_plus: ^5.0.2
+  skeletonizer: ^1.0.1
 
 dev_dependencies:
   flutter_test:

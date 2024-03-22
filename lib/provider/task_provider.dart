@@ -1,4 +1,3 @@
-import 'package:firebase_todo/models/profile.dart';
 import 'package:firebase_todo/models/todo.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +6,7 @@ class TaskProvider with ChangeNotifier {
   int currentTabIndex = 0;
   String profilePicture = '';
 
-  void setTodoList(TodoModel todo) {
+  void addTodoList(TodoModel todo) {
     todoList.add(todo);
     notifyListeners();
   }
